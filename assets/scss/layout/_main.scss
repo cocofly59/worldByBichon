@@ -49,6 +49,21 @@
 				text-align: center;
 			}
 
+      .resp-container {
+        min-height: 315rem;
+        position: relative;
+        overflow: hidden;
+        padding-top: 56.25%;
+      }
+
+      .resp-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        border: 100%;
+      }
+
 			@include breakpoint('<=large') {
 				@include padding((_size(padding) * 3), (_size(padding) * 2));
 			}

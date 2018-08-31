@@ -2711,7 +2711,7 @@ body.is-preload #intro:not(.hidden) + #header + #nav {
   -webkit-transition: -webkit-transform 1s ease, opacity 1s ease;
   -ms-transition: -ms-transform 1s ease, opacity 1s ease;
   transition: transform 1s ease, opacity 1s ease;
-  background: rgba(255, 255, 255, 0.175);
+  background: rgba(200, 200, 200, 0.5);
   height: 4rem;
   line-height: 4rem;
   margin: -4rem auto 0 auto;
@@ -2858,6 +2858,19 @@ body.is-preload #intro:not(.hidden) + #header + #nav {
 }
 #main > .post.featured {
   text-align: center;
+}
+#main > .post .resp-container {
+  min-height: 315rem;
+  position: relative;
+  overflow: hidden;
+  padding-top: 56.25%;
+}
+#main > .post .resp-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border: 100%;
 }
 @media screen and (max-width: 1280px) {
   #main > .post {

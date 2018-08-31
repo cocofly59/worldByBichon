@@ -8,9 +8,12 @@
  */
 ?>
 <head>
-  <title>World by Bichon <?php if ( is_singular("post") ){ echo "it is a post.";} elseif (is_home()){echo "it is home.";} elseif (is_singular('page')) { echo "it is a page";} else { echo "it is nothing";}?></title>
+  <title>World by Bichon</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <noscript><link rel="stylesheet" href="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/css/noscript.css" /></noscript>
+  <link rel="stylesheet" href="styles.css">
+
+
   <?php wp_head(); ?>
 </head>
