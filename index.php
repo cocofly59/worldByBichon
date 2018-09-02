@@ -14,6 +14,7 @@
 			<!-- Intro -->
 <?php
   if (is_my_home()):
+    $subtitle = get_posts( array("title" => "subtitle") );
 ?>
 			<div id="intro">
 				<h1>
@@ -21,7 +22,7 @@
 					<?php echo get_bloginfo( 'name' ); ?>
 				</h1>
 				<p>
-					<?php echo get_bloginfo( 'description' ); ?>
+					<?php echo $subtitle[0]->post_content; ?>
 				</p>
 				<ul class="actions">
 					<li><a href="#header" class="button icon solo fa-arrow-down scrolly">Continue</a></li>
@@ -82,12 +83,29 @@
 			endif;
 		endif;
 	endforeach;
+  $facebook = get_posts( array("title" => "facebook") );
+  $instagram = get_posts( array("title" => "instagram") );
+  $twitter = get_posts( array("title" => "twitter") );
 ?>
       </ul>
 			<ul class="icons">
-				<li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
-				<li><a href="#" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
-				<li><a href="#" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+<?php
+  if (count($twitter) == 1):
+?>
+				<li><a href="<?php echo $twitter[0]->post_content; ?>" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+<?php
+  endif;
+  if (count($facebook) == 1):
+?>
+				<li><a href="<?php echo $facebook[0]->post_content; ?>" class="icon fa-facebook"><span class="label">Facebook</span></a></li>
+<?php
+  endif;
+  if (count($instagram) == 1):
+?>
+				<li><a href="<?php echo $instagram[0]->post_content; ?>" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
+<?php
+  endif;
+?>
 			</ul>
 		</nav>
 <?php

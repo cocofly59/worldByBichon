@@ -3,7 +3,7 @@
 function my_assets() {
 
   /* theme's primary style.css file */
-  wp_enqueue_style( 'main-css' , get_template_directory_uri() . 'style.php' );
+  wp_enqueue_style( 'main-css' , get_stylesheet_uri() );
 
   /* boostrap resources from theme files */
   wp_enqueue_style( 'min-css' , get_template_directory_uri() . '/assets/css/font-awesome.min.css' );
@@ -117,7 +117,7 @@ function displayEmptyTargets() {
 ?>
   <article class="post featured">
     <header class="major">
-      <h2>Oups! <br/> Theres is no article is this section!</h2>
+      <h2>Oups! <br/> Theres is no article in this section!</h2>
       <p>First article of this section is coming soon.</p>
     </header>
   </article>
@@ -164,7 +164,33 @@ function getCategoryId($url="") {
 function displayTargets($targetByPage=10) {
   $isDisplayingCategories = false;
   if (is_my_home()) {
-    $targets = get_posts( $args );
+    $allTargets = get_posts(array(
+      'numberposts' => -1
+    ));
+
+    $targets = array();
+    foreach ($allTargets as $key => $value) {
+      $isUncategorized = false;
+      $categories = get_the_category($value->ID) ;
+      foreach ($categories as $keyCategory => $category) {
+         if ($category->name == "Uncategorized") {
+           $isUncategorized = true;
+         }
+      }
+      if (!$isUncategorized) {
+        array_push($targets, $value);
+      }
+    }
+    $homePost = get_posts( array("title" => "home") );
+    if (count($homePost) == 1) {
+      ?>
+      <article class="post featured">
+        <header class="major">
+          <?php echo $homePost[0]->post_content;  ?>
+        </header>
+      </article>
+      <?php
+    }
   } else {
     $parent_category_id=getCategoryId();
     $parent_category = get_term( $parent_category_id, 'category' );
@@ -180,14 +206,7 @@ function displayTargets($targetByPage=10) {
                  'hide_empty' => 0)
       );
     }
-    ?>
-    <article class="post featured">
-      <header class="major">
-        <h2><?php echo $parent_category->name; ?></h2>
-        <p><?php echo $parent_category->description;  ?></p>
-      </header>
-    </article>
-    <?php
+
   }
   if (count($targets) == 0) {
     displayEmptyTargets();

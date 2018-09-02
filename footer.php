@@ -78,15 +78,33 @@
   }
 }
 
+$facebook = get_posts( array("title" => "facebook") );
+$instagram = get_posts( array("title" => "instagram") );
+$twitter = get_posts( array("title" => "twitter") );
 
 ?>
 <footer id="footer">
   <section>
     <h3>Social</h3>
     <ul class="icons alt">
-      <li><a href="#" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li>
-      <li><a href="#" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li>
-      <li><a href="#" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li>
+      <ul class="icons">
+<?php
+  if (count($twitter) == 1):
+?>
+        <li><a href="<?php echo $twitter[0]->post_content; ?>" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li>
+<?php
+  endif;
+  if (count($facebook) == 1):
+?>
+        <li><a href="<?php echo $facebook[0]->post_content; ?>" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li>
+<?php
+  endif;
+  if (count($instagram) == 1):
+?>
+        <li><a href="<?php echo $instagram[0]->post_content; ?>" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li>
+<?php
+  endif;
+?>
     </ul>
   </section>
   <!-- Dynamic styles -->
@@ -94,7 +112,7 @@
 
     #wrapper > .bg {
 
-      background-image: url("../../images/overlay.png"), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("<?php echo $image; ?>");
+      background-image: url("<?php echo get_template_directory_uri()."/images/overlay.png"; ?>"), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("<?php echo $image; ?>");
 
     }
 
