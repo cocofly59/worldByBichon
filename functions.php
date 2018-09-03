@@ -117,8 +117,8 @@ function displayEmptyTargets() {
 ?>
   <article class="post featured">
     <header class="major">
-      <h2>Oups! <br/> Theres is no article in this section!</h2>
-      <p>First article of this section is coming soon.</p>
+      <h2>Désolé! <br/> Il n'y a pour l'instant aucun article dans cette section!</h2>
+      <p>Le premier article arrivera bientôt.</p>
     </header>
   </article>
 <?php
@@ -206,7 +206,14 @@ function displayTargets($targetByPage=10) {
                  'hide_empty' => 0)
       );
     }
-
+    ?>
+    <article class="post featured">
+      <header class="major">
+        <h2><?php echo $parent_category->name; ?></h2>
+        <p><?php echo $parent_category->description;  ?></p>
+      </header>
+    </article>
+    <?php
   }
   if (count($targets) == 0) {
     displayEmptyTargets();
@@ -508,7 +515,7 @@ function formatPost($post) {
                       $post->post_content,
                       $matches);
   while ($found == 1) {
-    $answer= '<p>'.$matches["text"].'<br/></p>';
+    $answer= '<p>'.$matches["text"].'</p>';
     $content[strpos($copyContent, $matches[0])] = $answer;
     $post->post_content = str_replace($matches[0], "", $post->post_content);
     $found = preg_match("@(?<text>.+)@",
@@ -585,7 +592,6 @@ function displayPost($post, $isPage=false) {
   <?php
     echo $post->post_content;
   ?>
-
 
   </section>
 

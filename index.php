@@ -18,7 +18,6 @@
 ?>
 			<div id="intro">
 				<h1>
-					Welcome to <br />
 					<?php echo get_bloginfo( 'name' ); ?>
 				</h1>
 				<p>
@@ -41,7 +40,7 @@
 <?php
 	if (is_my_home()):
 ?>
-					<li class="active"><a href="<?php echo get_home_url(); ?>"> Home </a></li>
+					<li class="active"><a href="<?php echo get_home_url(); ?>"> Accueil </a></li>
 <?php
 	else:
 ?>
