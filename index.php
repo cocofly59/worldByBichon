@@ -44,7 +44,7 @@
 <?php
 	else:
 ?>
-					<li><a href="<?php echo get_home_url(); ?>"> Home </a></li>
+					<li><a href="<?php echo get_home_url(); ?>"> Accueil </a></li>
 <?php
 	endif;
 	$pages = get_pages();

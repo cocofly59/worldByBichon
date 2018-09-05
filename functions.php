@@ -183,11 +183,10 @@ function displayTargets($targetByPage=10) {
     }
     $homePost = get_posts( array("title" => "home") );
     if (count($homePost) == 1) {
+      formatPost($homePost[0]);
       ?>
       <article class="post featured">
-        <header class="major">
-          <?php echo $homePost[0]->post_content;  ?>
-        </header>
+        <?php echo $homePost[0]->post_content;  ?>
       </article>
       <?php
     }
@@ -417,18 +416,24 @@ function getPostSummary($post, $isFirstParagraph=false, $removeFirstParagraphe=f
 }
 
 function getFirstImage($post, $removeIt=false, $onlyUrl=false) {
-  $found = preg_match('@<span class="image fit">(?><a +href *= *"(?<href>[^"]*)" *>)* *<img +src *= *"(?<src>[^"]*)" */> *(?></a>)* *</span>@', $post->post_content, $matches);
-  $answer = $matches["src"];
+  $found = preg_match('@<span class="image fit">(.*)</span>@', $post->post_content, $matches);
+  preg_match('@src *= *"(?<src>[^"]*)"@', $matches[1], $src);
+  preg_match('@href *= *"(?<href>[^"]*)"@', $matches[1], $href);
+  $foundCaption = preg_match('@<span class="overlay"><span class="captionText">[^<^>]*</span></span>@',
+              $matches[0],
+              $caption);
+  $answer = $src["src"];
   if (!$onlyUrl) {
     if ($found != 0) {
       if ($removeIt) {
         $post->post_content = str_replace($matches[0], "", $post->post_content);
-        $answer= '<img src="'.$matches["src"].'" />';
-        if (array_key_exists("href", $matches)!==false) {
-          $answer = '<a href="'.$matches["href"].'">'.$answer.'</a>';
+        $answer= '<img src="'.$src["src"].'" />';
+        $answer = '<a href="'.$href["href"].'">'.$answer.'</a>';
+        if ($foundCaption) {
+          $answer .= $caption[0];
         }
       } else {
-        $answer= '<img src="'.$matches["src"].'" />';
+        $answer= '<img src="'.$src["src"].'" />';
       }
     }
   }
@@ -436,34 +441,40 @@ function getFirstImage($post, $removeIt=false, $onlyUrl=false) {
 }
 
 function formatPost($post) {
-
   $content = array();
+
+  $post->post_content = preg_replace("@&nbsp;@", "", $post->post_content);
   $post->post_content = preg_replace("@<div> *</div>@", "", $post->post_content);
   $copyContent = $post->post_content;
-
   /* format images */
-  $found = preg_match("@(?><div>)*(?><a +href=\"(?<href>.*)\" +rel=\"(?<rel>.*)\" *>)*<img.*src=\"(?<src>.*)\" +alt=\"(?<alt>.*)\" +width=\"(?<width>[0-9]*)\" +height=\"(?<height>[0-9]*)\"(?> +class=\"(?<class>[^\"]*)\")* */>(?></a>)*(?></div>)*@",
+  $found = preg_match("@.*<img.*@",
                       $post->post_content,
                       $matches);
   while ($found == 1) {
-    $answer= '<img src="'.$matches["src"].'" />';
-    $found = preg_match("@(.*)(?>-[0-9]{1,}x[0-9]{1,})\.([a-zA-Z]+)@",$matches["src"], $secondMatches);
+    preg_match('@src *= *"(?<src>[^"]*)"@',
+                $matches[0],
+                $src);
+    $foundCaption = preg_match('@([^<^>]*)\[/caption\]@',
+                $matches[0],
+                $caption);
+    $answer= '<img src="'.$src["src"].'" />';
+    $found = preg_match("@(.*)(?>-[0-9]{1,}x[0-9]{1,})\.([a-zA-Z]+)@",$src["src"], $secondMatches);
     if ($found == 1 ) {
       $href = $secondMatches[1].".".$secondMatches[2];
     } else {
-      $href = $matches[0];
+      $href = $src["src"];
     }
-    if (array_key_exists("href", $matches)!==false) {
-      $answer = '<a href="'.$href.'">'.$answer.'</a>';
+    $answer = '<a href="'.$href.'">'.$answer.'</a>';
+    if ($foundCaption == 1) {
+      $answer .= '<span class="overlay"><span class="captionText">'.$caption[1].'</span></span>';
     }
     $answer = '<span class="image fit">'.$answer.' </span>';
     $content[strpos($copyContent, $matches[0])] = $answer;
     $post->post_content = str_replace($matches[0], "\n", $post->post_content);
-    $found = preg_match("@(?><div>)*(?><a +href=\"(?<href>.*)\" +rel=\"(?<rel>.*)\" *>)*<img.*src=\"(?<src>.*)\" +alt=\"(?<alt>.*)\" +width=\"(?<width>[0-9]*)\" +height=\"(?<height>[0-9]*)\"(?> +class=\"(?<class>[^\"]*)\")* */>(?></a>)*(?></div>)*@",
+    $found = preg_match("@.*<img.*@",
                         $post->post_content,
                         $matches);
   }
-
   /* format instagram post */
   $found = preg_match("@<blockquote(?>.|\n|(?>instagram-media))*</blockquote>@",
                       $post->post_content,
@@ -480,7 +491,6 @@ function formatPost($post) {
                         $post->post_content,
                         $matches);
   }
-
   /* format youtube's videos */
   $found = preg_match('@<iframe(.*(?>youtube).*)width="[0-9]*" height="[0-9]*"(.*)</iframe>@',
                       $post->post_content,
@@ -493,7 +503,6 @@ function formatPost($post) {
                         $post->post_content,
                         $matches);
   }
-
   /* format list */
   $found = preg_match("@(?<text><ul>([^<]|<[^u]|<l[^l]|<ul[^>])*(|<|<u|<ul)</ul>)@",
                       $post->post_content,
@@ -506,7 +515,6 @@ function formatPost($post) {
                         $post->post_content,
                         $matches);
   }
-
   /* format  text */
   $post->post_content = preg_replace("@<div>@", "", $post->post_content);
   $post->post_content = preg_replace("@</div>@", "", $post->post_content);
@@ -592,7 +600,6 @@ function displayPost($post, $isPage=false) {
   <?php
     echo $post->post_content;
   ?>
-
   </section>
 
 
