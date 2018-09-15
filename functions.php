@@ -16,13 +16,16 @@ function my_assets() {
   wp_enqueue_script( 'breakpoint-min' , get_template_directory_uri() . '/assets/js/breakpoints.min.js');
   wp_enqueue_script( 'utils-js' , get_template_directory_uri() . '/assets/js/util.js' , array( 'jquery-min' ), false, true);
   wp_enqueue_script( 'main-js' , get_template_directory_uri() . '/assets/js/main.js' , array( 'jquery-min' ), false, true);
-
+  wp_enqueue_script( 'openlayers-js' , "http://www.openlayers.org/api/OpenLayers.js");
+  wp_enqueue_script( 'map-js' , get_template_directory_uri() . '/assets/js/map.js');
+  wp_enqueue_script( 'pinterest-js' , "//assets.pinterest.com/js/pinit.js");
 }
+
 add_action( 'wp_enqueue_scripts' , 'my_assets' );
 
 function displayFirstTarget($target, $isDisplayingCategories) {
 
-if (getPageNumber() == 1):
+if (getPageNumber() == 1 && !$isDisplayingCategories):
   if ($isDisplayingCategories):
     $query_images_args = array(
         'post_type'      => 'attachment',
@@ -85,7 +88,7 @@ if ($isDisplayingCategories):
   }
 ?>
 <article>
-  <header>
+  <header class="major">
     <h2><a href="<?php echo esc_url( get_category_link( $target->term_id ) ),"/page=1"; ?>"><?php echo $target->name; ?><br /></a></h2>
     <p><?php echo $target->description; ?></p>
   </header>
@@ -99,12 +102,12 @@ else:
   formatPost($target);
 ?>
 <article>
-  <header>
+  <header class="major">
     <span class="date"><?php echo getMyDate($target); ?></span>
     <h2><a href="<?php echo get_page_link( $target->ID ); ?>"><?php echo $target->post_title; ?><br /></a></h2>
+    <?php echo getPostSummary($target); ?>
   </header>
   <a href="<?php echo get_page_link( $target->ID ); ?>" class="image fit"><?php echo getFirstImage($target); ?></a>
-  <?php echo getPostSummary($target); ?>
   <ul class="actions special">
     <li><a href="<?php echo get_page_link( $target->ID); ?>" class="button">Lire</a></li>
   </ul>
@@ -190,6 +193,11 @@ function displayTargets($targetByPage=10) {
       </article>
       <?php
     }
+    /*?>
+    <article>
+      <div id="basicMap"></div>
+    </article>
+    <?php*/
   } else {
     $parent_category_id=getCategoryId();
     $parent_category = get_term( $parent_category_id, 'category' );
@@ -200,10 +208,31 @@ function displayTargets($targetByPage=10) {
       $targets = get_posts( $args );
     } else {
       $isDisplayingCategories = true;
-      $targets = get_categories(
+      $categories = get_categories(
           array( 'parent' => $parent_category_id,
                  'hide_empty' => 0)
       );
+      $targets = array();
+      $arrayDateCategory = array();
+      $emptyCategories = array();
+      foreach ($categories as $key => $category) {
+        $firstArticleOfCategory = get_posts(array(
+          'category' => $category->term_id,
+          'numberposts' => 1
+        ));
+        if (count($firstArticleOfCategory) == 1) {
+          $arrayDateCategory[strtotime($firstArticleOfCategory[0]->post_date)] = $category;
+        } else {
+          array_push($emptyCategories, $category);
+        }
+      }
+      krsort($arrayDateCategory);
+      foreach ($arrayDateCategory as $date => $category) {
+        array_push($targets, $category);
+      }
+      foreach ($emptyCategories as $index => $category) {
+        array_push($targets, $category);
+      }
     }
     ?>
     <article class="post featured">
@@ -221,7 +250,7 @@ function displayTargets($targetByPage=10) {
     ?>
     <section class="posts">
       <?php
-    for ($index=(getPageNumber()-1)*$targetByPage + ((getPageNumber()==1)?1:0);
+    for ($index=(getPageNumber()-1)*$targetByPage + ((getPageNumber()==1 && !$isDisplayingCategories)?1:0);
          $index < getPageNumber()*$targetByPage ;
          $index++) {
       if ($index < count($targets)) {
@@ -231,8 +260,8 @@ function displayTargets($targetByPage=10) {
     $numberPages = getNumberOfPagesForMenu($targetByPage);
     if (   $numberPages>0
         && (
-               (getPageNumber() < $numberPages && $targetByPage%2==((getPageNumber()==1)?0:1))
-            || (getPageNumber() == $numberPages && (count($targets) - ($numberPages-1)*$targetByPage)%2==((getPageNumber()==1)?0:1))
+               (getPageNumber() < $numberPages && $targetByPage%2==((getPageNumber()==1 && !$isDisplayingCategories)?0:1))
+            || (getPageNumber() == $numberPages && (count($targets) - ($numberPages-1)*$targetByPage)%2==((getPageNumber()==1 && !$isDisplayingCategories)?0:1))
            )
         ) {
       displayEmptyArticle();
@@ -476,7 +505,7 @@ function formatPost($post) {
                         $matches);
   }
   /* format instagram post */
-  $found = preg_match("@<blockquote(?>.|\n|(?>instagram-media))*</blockquote>@",
+  $found = preg_match("@<blockquote(?>.|\n)*(?>instagram-media)(?>.|\n)*</div></blockquote>@",
                       $post->post_content,
                       $matches);
   $post->post_content = str_replace("<script async defer src=\"//www.instagram.com/embed.js\"></script>",
@@ -487,7 +516,7 @@ function formatPost($post) {
     $answer = "<center>".$matches[0]."</center>"."<script async defer src=\"//www.instagram.com/embed.js\"></script>";
     $content[strpos($copyContent, $matches[0])] = $answer;
     $post->post_content = str_replace($matches[0], "\n", $post->post_content);
-    $found = preg_match("@<blockquote(?>.|\n|(?>instagram-media))*</blockquote>@",
+    $found = preg_match("@<blockquote(?>.|\n)*(?>instagram-media)(?>.|\n)*</div></blockquote>@",
                         $post->post_content,
                         $matches);
   }
@@ -496,13 +525,40 @@ function formatPost($post) {
                       $post->post_content,
                       $matches);
   while ($found == 1) {
-    $post->post_content = str_replace($matches[0], "", $post->post_content);
-    $answer = '<div class="resp-container"><iframe class="resp-iframe" '.$matches[1].$matches[2].'></iframe></div>';
+    $answer = '<div class="video-container">'.$matches[0].'</div><p></br></p>';/*'<iframe class="youtube" ' .$matches[1]." ".$matches[2].'</iframe>';*/
     $content[strpos($copyContent, $matches[0])] = $answer;
+    $post->post_content = str_replace($matches[0], "", $post->post_content);
     $found = preg_match('@<iframe(.*(?>youtube).*)width="[0-9]*" height="[0-9]*"(.*)</iframe>@',
                         $post->post_content,
                         $matches);
   }
+
+  /* format facebook's posts */
+  $found = preg_match('@<iframe(.*(?>facebook).*)</iframe>@',
+                      $post->post_content,
+                      $matches);
+  while ($found == 1) {
+    $answer = '<center>'.$matches[0].'</center>';
+    $content[strpos($copyContent, $matches[0])] = $answer;
+    $post->post_content = str_replace($matches[0], "", $post->post_content);
+    $found = preg_match('@<iframe(.*(?>facebook).*)</iframe>@',
+                        $post->post_content,
+                        $matches);
+  }
+
+  /* format pinterest's posts */
+  $found = preg_match('@<a data-pin-do="embedPin".*</a>@',
+                      $post->post_content,
+                      $matches);
+  while ($found == 1) {
+    $answer = '<center>'.$matches[0].'</center>';
+    $content[strpos($copyContent, $matches[0])] = $answer;
+    $post->post_content = str_replace($matches[0], "", $post->post_content);
+    $found = preg_match('@<a data-pin-do="embedPin".*</a>@',
+                        $post->post_content,
+                        $matches);
+  }
+
   /* format list */
   $found = preg_match("@(?<text><ul>([^<]|<[^u]|<l[^l]|<ul[^>])*(|<|<u|<ul)</ul>)@",
                       $post->post_content,
@@ -559,7 +615,7 @@ function getMyDate($post) {
   $frenchMonths = array(
     "$1",
     "Janvier",
-    "Fevrier",
+    "Février",
     "Mars",
     "Avril",
     "Mai",
@@ -569,7 +625,7 @@ function getMyDate($post) {
     "Septembre",
     "Octobre",
     "Novembre",
-    "Decembre",
+    "Décembre",
   );
 
   $date = strftime("%d %B %G",strtotime($post->post_date));
@@ -578,31 +634,35 @@ function getMyDate($post) {
 }
 
 function displayPost($post, $isPage=false) {
-  ?>
-  <section class="post">
-    <header class="major">
-      <?php
-      formatPost($post);
-      if (!$isPage):
-      ?>
-      <span class="date"><?php
-      echo getMyDate($post);
-      ?>
-    </span>
-      <?php
-      endif;
-      ?>
-      <h1><?php echo $post->post_title;?></h1>
-      <?php echo getPostSummary($post, true, true); ?>
-    </header>
-    <div class="image main"><?php echo getFirstImage($post, true); ?> </div>
+?>
+<section class="post">
+<?php
+  formatPost($post);
+  if (!$isPage):
+?>
+  <header class="major">
+    <span class="date"><?php echo getMyDate($post);?></span>
+    <h1><?php echo $post->post_title;?></h1>
+    <?php echo getPostSummary($post, true, true); ?>
+  </header>
+  <div class="image main"><?php echo getFirstImage($post, true); ?> </div>
+<?php
+  endif;
+  echo $post->post_content;
+?>
+</section>
+<?php
+}
 
-  <?php
-    echo $post->post_content;
-  ?>
-  </section>
+function my_print($somethingToPrint) {
+  echo '<p>'.$somethingToPrint.'</p>';
+}
 
-
-  <?php
+function my_print_r($anArray) {
+?>
+<textarea>
+  <?php print_r($anArray); ?>
+</textarea>
+<?php
 }
 ?>

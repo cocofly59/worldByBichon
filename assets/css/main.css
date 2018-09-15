@@ -2876,6 +2876,23 @@ body.is-preload #intro:not(.hidden) + #header + #nav {
   }
 }
 /* Main */
+#basicMap {
+  height: 500px;
+}
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  padding-top: 30px;
+  height: 0;
+  overflow: hidden;
+}
+.video-container iframe, .video-container object, .video-container embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 #main {
   background-color: #fff;
   position: relative;
@@ -2908,19 +2925,6 @@ body.is-preload #intro:not(.hidden) + #header + #nav {
 }
 #main > .post.featured {
   text-align: center;
-}
-#main > .post .resp-container {
-  min-height: 315rem;
-  position: relative;
-  overflow: hidden;
-  padding-top: 56.25%;
-}
-#main > .post .resp-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border: 100%;
 }
 @media screen and (max-width: 1280px) {
   #main > .post {

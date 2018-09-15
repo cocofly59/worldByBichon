@@ -91,17 +91,17 @@ $twitter = get_posts( array("title" => "twitter") );
 <?php
   if (count($twitter) == 1):
 ?>
-        <li><a href="<?php echo $twitter[0]->post_content; ?>" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li>
+        <li><a target="_blank" href="<?php echo $twitter[0]->post_content; ?>" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li>
 <?php
   endif;
   if (count($facebook) == 1):
 ?>
-        <li><a href="<?php echo $facebook[0]->post_content; ?>" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li>
+        <li><a target="_blank" href="<?php echo $facebook[0]->post_content; ?>" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li>
 <?php
   endif;
   if (count($instagram) == 1):
 ?>
-        <li><a href="<?php echo $instagram[0]->post_content; ?>" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li>
+        <li><a target="_blank" href="<?php echo $instagram[0]->post_content; ?>" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li>
 <?php
   endif;
 ?>

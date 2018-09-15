@@ -6,6 +6,29 @@
 
 /* Main */
 
+  #basicMap {
+      height:500px;
+
+  }
+
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    padding-top: 30px;
+    height: 0;
+    overflow: hidden;
+
+     iframe,
+     object,
+     embed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
 	#main {
 		background-color: _palette(bg);
 		position: relative;
@@ -49,20 +72,6 @@
 				text-align: center;
 			}
 
-      .resp-container {
-        min-height: 315rem;
-        position: relative;
-        overflow: hidden;
-        padding-top: 56.25%;
-      }
-
-      .resp-iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        border: 100%;
-      }
 
 			@include breakpoint('<=large') {
 				@include padding((_size(padding) * 3), (_size(padding) * 2));
